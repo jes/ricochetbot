@@ -1,0 +1,5 @@
+This is a small wrapper around go-ricochet to provide an API that I find more intuitive.
+
+If you want something more powerful you should use go-ricochet directly.
+
+I have hacked up go-ricochet in some places because either it couldn't do things I wanted, or I couldn't work out how to do them.
