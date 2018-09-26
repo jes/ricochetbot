@@ -1,18 +1,17 @@
 package ricochetbot
 
 import (
-    "github.com/jes/go-ricochet/application"
-    "github.com/jes/go-ricochet/channels"
-    "log"
-    "time"
+	"github.com/jes/go-ricochet/application"
+	"github.com/jes/go-ricochet/channels"
+	"log"
+	"time"
 )
 
 type Peer struct {
-    Onion string // empty string until they've authenticated
-    rai *application.ApplicationInstance
-    bot *RicochetBot
+	Onion string // empty string until they've authenticated
+	rai   *application.ApplicationInstance
+	bot   *RicochetBot
 }
-
 
 // We always want bidirectional chat channels
 func (peer *Peer) OpenInbound() {
@@ -31,9 +30,9 @@ func (peer *Peer) OpenInbound() {
 
 func (peer *Peer) ChatMessage(messageID uint32, when time.Time, message string) bool {
 	log.Printf("ChatMessage(from: %v, %v", peer.rai.RemoteHostname, message)
-    if peer.bot.OnMessage != nil {
-        peer.bot.OnMessage(peer, message)
-    }
+	if peer.bot.OnMessage != nil {
+		peer.bot.OnMessage(peer, message)
+	}
 	SendMessage(peer.rai, message)
 	return true
 }
