@@ -19,10 +19,6 @@ type RicochetBot struct {
 	OnDisconnect     func(*Peer)
 }
 
-func (peer *Peer) SendMessage(message string) {
-	fmt.Println("SendMessage to ", peer.Onion, ": ", message)
-}
-
 func (bot *RicochetBot) Connect(onion string) {
 	fmt.Println("Connect to ", onion)
 }

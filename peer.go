@@ -33,8 +33,11 @@ func (peer *Peer) ChatMessage(messageID uint32, when time.Time, message string) 
 	if peer.bot.OnMessage != nil {
 		peer.bot.OnMessage(peer, message)
 	}
-	SendMessage(peer.rai, message)
 	return true
+}
+
+func (peer *Peer) SendMessage(message string) {
+    SendMessage(peer.rai, message)
 }
 
 func SendMessage(rai *application.ApplicationInstance, message string) {
