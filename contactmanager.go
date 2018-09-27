@@ -14,14 +14,17 @@ type RicochetBotContactManager struct {
 // LookupContact returns that a contact is known and allowed to communicate for all cases.
 func (rbcm *RicochetBotContactManager) LookupContact(hostname string, publicKey rsa.PublicKey) (allowed, known bool) {
 	status := true
-	if rbcm.bot.OnContactRequest != nil {
+	if rbcm.bot.OnNewPeer != nil {
 		status = rbcm.bot.OnNewPeer(rbcm.bot.LookupPeerByHostname(hostname))
 	}
 	return status, status
 }
 
 func (rbcm *RicochetBotContactManager) ContactRequest(hostname string, name string, message string) string {
-	accept := rbcm.bot.OnContactRequest(rbcm.bot.LookupPeerByHostname(hostname), name, message)
+	accept := true
+	if rbcm.bot.OnContactRequest != nil {
+		accept = rbcm.bot.OnContactRequest(rbcm.bot.LookupPeerByHostname(hostname), name, message)
+	}
 	fmt.Println("contactmanager.go: ContactRequest(", name, ", ", message, ")")
 	if accept {
 		return "Accepted"
