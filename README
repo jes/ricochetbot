@@ -4,3 +4,7 @@ If you want something more powerful you should use go-ricochet directly.
 
 I have hacked up go-ricochet in some places because either it couldn't do things I wanted, or I couldn't work out how to do them.
 That means ricochetbot needs to be used with my dirty version of go-ricochet instead of the clean version.
+
+Still to implement:
+ - automatically manage the tor process
+ - built-in contacts management, with persistent state available
