@@ -71,7 +71,7 @@ func (bot *RicochetBot) Run() {
 	af.AddHandler("im.ricochet.chat", func(rai *application.ApplicationInstance) func() channels.Handler {
 		return func() channels.Handler {
 			chat := new(channels.ChatChannel)
-			chat.Handler = &Peer{rai: rai, bot: bot, Onion: rai.RemoteHostname}
+			chat.Handler = &Peer{rai: rai, Bot: bot, Onion: rai.RemoteHostname}
 			return chat
 		}
 	})
@@ -95,7 +95,7 @@ func (bot *RicochetBot) Run() {
 		peer := new(Peer)
 		peer.Onion = hostname
 		peer.rai = rai
-		peer.bot = bot
+		peer.Bot = bot
 		bot.Peers = append(bot.Peers, peer)
 	}
 
