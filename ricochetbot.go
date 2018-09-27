@@ -45,16 +45,6 @@ func (bot *RicochetBot) LookupPeerByHostname(onion string) *Peer {
 	return nil
 }
 
-func (bot *RicochetBot) CreatePeer(onion string, rai *application.ApplicationInstance) *Peer {
-	peer := new(Peer)
-
-	peer.Onion = onion
-	peer.rai = rai
-	peer.bot = bot
-
-	return peer
-}
-
 func (bot *RicochetBot) Run() {
 	af := application.ApplicationInstanceFactory{}
 	af.Init()
