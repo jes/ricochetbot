@@ -28,6 +28,10 @@ func (peer *Peer) OpenInbound() {
 	}
 }
 
+func (peer *Peer) OpenedOutbound() {
+	peer.bot.OnReadyToChat(peer)
+}
+
 func (peer *Peer) ChatMessage(messageID uint32, when time.Time, message string) bool {
 	log.Printf("ChatMessage(from: %v, %v", peer.rai.RemoteHostname, message)
 	if peer.bot.OnMessage != nil {

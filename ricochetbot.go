@@ -6,14 +6,17 @@ import (
 	"github.com/jes/go-ricochet/application"
 	"github.com/jes/go-ricochet/channels"
 	"log"
+	"sync"
 )
 
 type RicochetBot struct {
 	PrivateKey *rsa.PrivateKey
 	Peers      []*Peer
+	peerLock   sync.Mutex
 
 	OnConnect        func(*Peer)
 	OnNewPeer        func(*Peer) bool
+	OnReadyToChat    func(*Peer)
 	OnMessage        func(*Peer, string)
 	OnContactRequest func(*Peer, string, string) bool
 	OnDisconnect     func(*Peer)
@@ -23,8 +26,10 @@ func (bot *RicochetBot) Connect(onion string) {
 	fmt.Println("Connect to ", onion)
 }
 
-// TODO: mutex on operations on bot.Peers
 func (bot *RicochetBot) DeletePeer(peer *Peer) {
+	bot.peerLock.Lock()
+	defer bot.peerLock.Unlock()
+
 	for i, p := range bot.Peers {
 		if p == peer {
 			bot.Peers[i] = bot.Peers[len(bot.Peers)-1]
@@ -36,6 +41,9 @@ func (bot *RicochetBot) DeletePeer(peer *Peer) {
 
 // XXX: what if we have 2 peers with the same hostname?
 func (bot *RicochetBot) LookupPeerByHostname(onion string) *Peer {
+	bot.peerLock.Lock()
+	defer bot.peerLock.Unlock()
+
 	for _, peer := range bot.Peers {
 		if peer.Onion == onion {
 			return peer
