@@ -10,9 +10,12 @@ import (
 )
 
 type RicochetBot struct {
-	PrivateKey *rsa.PrivateKey
-	Peers      []*Peer
-	peerLock   sync.Mutex
+	PrivateKey        *rsa.PrivateKey
+	Peers             []*Peer
+	peerLock          sync.Mutex
+	TorControlAddress string
+	TorControlType    string
+	TorAuthentication string
 
 	OnConnect        func(*Peer)
 	OnNewPeer        func(*Peer) bool
@@ -103,7 +106,14 @@ func (bot *RicochetBot) Run() {
 	cm.bot = bot
 	app.Init("APPLICATION", bot.PrivateKey, af, cm)
 
-	al, err := application.SetupOnion("127.0.0.1:9051", "tcp4", "", bot.PrivateKey, 9878)
+	if bot.TorControlAddress == "" {
+		bot.TorControlAddress = "127.0.0.1:9051"
+	}
+	if bot.TorControlType == "" {
+		bot.TorControlType = "tcp4"
+	}
+
+	al, err := application.SetupOnion(bot.TorControlAddress, bot.TorControlType, bot.TorControlAuthentication, bot.PrivateKey, 9878)
 	if err != nil {
 		log.Fatalf("Could not setup Onion: %v", err)
 	}
