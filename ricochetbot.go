@@ -10,12 +10,12 @@ import (
 )
 
 type RicochetBot struct {
-	PrivateKey        *rsa.PrivateKey
-	Peers             []*Peer
-	peerLock          sync.Mutex
-	TorControlAddress string
-	TorControlType    string
-	TorAuthentication string
+	PrivateKey               *rsa.PrivateKey
+	Peers                    []*Peer
+	peerLock                 sync.Mutex
+	TorControlAddress        string
+	TorControlType           string
+	TorControlAuthentication string
 
 	OnConnect        func(*Peer)
 	OnNewPeer        func(*Peer) bool
