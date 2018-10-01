@@ -1,9 +1,13 @@
 package ricochetbot
 
 import (
+	"crypto/rand"
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"os/exec"
 	"strconv"
@@ -17,6 +21,16 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 		return err
 	}
 
+	password, err := RandomPassword()
+	if err != nil {
+		return err
+	}
+
+	hashedPassword, err := HashedPassword(password)
+	if err != nil {
+		return err
+	}
+
 	torCommand := exec.Command("/usr/bin/tor",
 		"--defaults-torrc", datadir+"/empty-torrc",
 		"-f", datadir+"/empty-torrc",
@@ -24,6 +38,7 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 		"SocksPort", "auto",
 		"ControlPort", "auto",
 		"ControlPortWriteToFile", datadir+"/control-port",
+		"HashedControlPassword", hashedPassword,
 		"__OwningControllerProcess", strconv.Itoa(os.Getpid()),
 		"AvoidDiskWrites", "1",
 		"Log", "notice stdout",
@@ -31,12 +46,6 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 
 	torCommand.Stdout = os.Stdout
 	torCommand.Stderr = os.Stderr
-
-	// unlink the control-port file
-	err = os.Remove(datadir + "/control-port")
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
 
 	// start tor
 	err = torCommand.Start()
@@ -68,6 +77,57 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 	bot.TorControlAddress = torControlPort[5:]
 	fmt.Println(bot.TorControlAddress)
 	bot.TorControlType = "tcp4"
+	bot.TorControlAuthentication = password
 
 	return nil
+}
+
+func RandomPassword() (string, error) {
+	return "jesdabest", nil
+}
+
+func RandomSalt(length int) (string, error) {
+	salt := make([]byte, length)
+	for i := 0; i < length; i++ {
+		b, err := rand.Int(rand.Reader, big.NewInt(255))
+		if err != nil {
+			return "", err
+		}
+		salt[i] = byte(b.Int64())
+	}
+	return string(salt), nil
+}
+
+// reimplementation of torControlHashedPassword() from https://github.com/ricochet-im/ricochet/blob/master/src/utils/CryptoKey.cpp
+//
+// in plain English, this repeats the password and the salt over and over again, until 65536 bytes has been reached,
+// and then takes SHA1 of that
+func HashedPassword(password string) (string, error) {
+	salt, err := RandomSalt(8)
+	if err != nil {
+		return "", err
+	}
+
+	// original was:
+	//   int count = ((quint32)16 + (96 & 15)) << ((96 >> 4) + 6);
+	// wtf?
+	count := 65536
+
+	tmp := salt + password
+	data := ""
+
+	// wtf?
+	for count > 0 {
+		c := len(tmp)
+		if count < c {
+			c = count
+		}
+		data += tmp[:c]
+		count -= len(tmp)
+	}
+
+	md := sha1.Sum([]byte(data))
+
+	// 60 is the hex-encoded value of 96, which is a constant used by Tor's algorithm
+	return "16:" + strings.ToUpper(hex.EncodeToString([]byte(salt))) + "60" + strings.ToUpper(hex.EncodeToString(md[:])), nil
 }
