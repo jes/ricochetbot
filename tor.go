@@ -83,7 +83,16 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 }
 
 func RandomPassword() (string, error) {
-	return "jesdabest", nil
+	alphabet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	password := ""
+	for i := 0; i < 20; i++ {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
+		if err != nil {
+			return "", err
+		}
+		password += string(alphabet[idx.Int64()])
+	}
+	return password, nil
 }
 
 func RandomSalt(length int) (string, error) {
