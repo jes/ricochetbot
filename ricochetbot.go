@@ -17,6 +17,8 @@ type RicochetBot struct {
 	TorControlType           string
 	TorControlAuthentication string
 
+	app *application.RicochetApplication
+
 	OnConnect        func(*Peer)
 	OnNewPeer        func(*Peer) bool
 	OnReadyToChat    func(*Peer)
@@ -26,7 +28,20 @@ type RicochetBot struct {
 }
 
 func (bot *RicochetBot) Connect(onion string) {
-	fmt.Println("Connect to ", onion)
+	instance, err := bot.app.Open(onion, "CONNECTION")
+	if err != nil {
+		// TODO: this shouldn't be fatal
+		log.Fatalf("can't connect to %s: %v", onion, err)
+	}
+	instance.Connection.Do(func() error {
+		handler, err := instance.OnOpenChannelRequest("im.ricochet.chat")
+		if err != nil {
+			log.Printf("Could not get chat handler!\n")
+			return err
+		}
+		_, err = instance.Connection.RequestOpenChannel("im.ricochet.chat", handler)
+		return err
+	})
 }
 
 func (bot *RicochetBot) DeletePeer(peer *Peer) {
@@ -92,9 +107,9 @@ func (bot *RicochetBot) Run() {
 		}
 	}
 
-	app := new(application.RicochetApplication)
+	bot.app = new(application.RicochetApplication)
 
-	app.OnNewPeer = func(rai *application.ApplicationInstance, hostname string) {
+	bot.app.OnNewPeer = func(rai *application.ApplicationInstance, hostname string) {
 		peer := new(Peer)
 		peer.Onion = hostname
 		peer.rai = rai
@@ -104,7 +119,7 @@ func (bot *RicochetBot) Run() {
 
 	cm := new(RicochetBotContactManager)
 	cm.bot = bot
-	app.Init("APPLICATION", bot.PrivateKey, af, cm)
+	bot.app.Init("APPLICATION", bot.PrivateKey, af, cm)
 
 	if bot.TorControlAddress == "" {
 		bot.TorControlAddress = "127.0.0.1:9051"
@@ -118,5 +133,5 @@ func (bot *RicochetBot) Run() {
 		log.Fatalf("Could not setup Onion: %v", err)
 	}
 
-	app.Run(al)
+	bot.app.Run(al)
 }
