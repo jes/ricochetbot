@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -75,7 +74,6 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 		return errors.New("can't understand tor control port: " + torControlPort)
 	}
 	bot.TorControlAddress = torControlPort[5:]
-	fmt.Println(bot.TorControlAddress)
 	bot.TorControlType = "tcp4"
 	bot.TorControlAuthentication = password
 
