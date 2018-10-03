@@ -27,11 +27,11 @@ type RicochetBot struct {
 	OnDisconnect     func(*Peer)
 }
 
-func (bot *RicochetBot) Connect(onion string) {
+func (bot *RicochetBot) Connect(onion string) error {
 	instance, err := bot.app.Open(onion, "CONNECTION")
 	if err != nil {
-		// TODO: this shouldn't be fatal
-		log.Fatalf("can't connect to %s: %v", onion, err)
+		log.Printf("can't connect to %s: %v", onion, err)
+		return err
 	}
 	instance.Connection.Do(func() error {
 		handler, err := instance.OnOpenChannelRequest("im.ricochet.chat")
@@ -40,8 +40,25 @@ func (bot *RicochetBot) Connect(onion string) {
 			return err
 		}
 		_, err = instance.Connection.RequestOpenChannel("im.ricochet.chat", handler)
+		peer := bot.AddPeer(instance, onion)
+		if bot.OnConnect != nil {
+			bot.OnConnect(peer)
+		}
 		return err
 	})
+	return nil
+}
+
+func (bot *RicochetBot) AddPeer(rai *application.ApplicationInstance, hostname string) *Peer {
+	bot.peerLock.Lock()
+	defer bot.peerLock.Unlock()
+
+	peer := new(Peer)
+	peer.Onion = hostname
+	peer.rai = rai
+	peer.Bot = bot
+	bot.Peers = append(bot.Peers, peer)
+	return peer
 }
 
 func (bot *RicochetBot) DeletePeer(peer *Peer) {
@@ -110,11 +127,7 @@ func (bot *RicochetBot) Run() {
 	bot.app = new(application.RicochetApplication)
 
 	bot.app.OnNewPeer = func(rai *application.ApplicationInstance, hostname string) {
-		peer := new(Peer)
-		peer.Onion = hostname
-		peer.rai = rai
-		peer.Bot = bot
-		bot.Peers = append(bot.Peers, peer)
+		bot.AddPeer(rai, hostname)
 	}
 
 	cm := new(RicochetBotContactManager)

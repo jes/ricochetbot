@@ -66,3 +66,7 @@ func SendMessage(rai *application.ApplicationInstance, message string) {
 func (peer *Peer) ChatMessageAck(messageID uint32, accepted bool) {
 
 }
+
+func (peer *Peer) Disconnect() {
+	peer.rai.Connection.Conn.Close()
+}
