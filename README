@@ -8,5 +8,4 @@ That means ricochetbot needs to be used with my dirty version of go-ricochet ins
 Still to implement:
  - built-in contacts management, with persistent state available
  - make sure rejecting contact requests etc. actually works
- - make it possible to connect out to other peers
  - more/better examples
