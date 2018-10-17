@@ -84,7 +84,6 @@ func (bot *RicochetBot) LookupPeerByHostname(onion string) *Peer {
 			return peer
 		}
 	}
-	fmt.Println("LookupPeerByHostname: ", onion, " FAILED to find peer")
 	return nil
 }
 

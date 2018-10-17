@@ -15,6 +15,8 @@ import (
 )
 
 func (bot *RicochetBot) ManageTor(datadir string) error {
+	os.MkdirAll(datadir, os.ModePerm)
+
 	err := ioutil.WriteFile(datadir+"/empty-torrc", []byte("Log notice stdout"), 0644)
 	if err != nil {
 		return err
