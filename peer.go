@@ -29,7 +29,9 @@ func (peer *Peer) OpenInbound() {
 }
 
 func (peer *Peer) OpenedOutbound() {
-	peer.Bot.OnReadyToChat(peer)
+	if peer.Bot.OnReadyToChat != nil {
+		peer.Bot.OnReadyToChat(peer)
+	}
 }
 
 func (peer *Peer) ChatMessage(messageID uint32, when time.Time, message string) bool {
