@@ -49,6 +49,10 @@ func (bot *RicochetBot) Connect(onion string) error {
 	return nil
 }
 
+func (bot *RicochetBot) Shutdown() {
+    bot.app.Shutdown()
+}
+
 func (bot *RicochetBot) AddPeer(rai *application.ApplicationInstance, hostname string) *Peer {
 	bot.peerLock.Lock()
 	defer bot.peerLock.Unlock()
