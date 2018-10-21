@@ -33,24 +33,16 @@ func (bot *RicochetBot) Connect(onion string) error {
 		log.Printf("can't connect to %s: %v", onion, err)
 		return err
 	}
-	instance.Connection.Do(func() error {
-		handler, err := instance.OnOpenChannelRequest("im.ricochet.chat")
-		if err != nil {
-			log.Printf("Could not get chat handler!\n")
-			return err
-		}
-		_, err = instance.Connection.RequestOpenChannel("im.ricochet.chat", handler)
-		peer := bot.AddPeer(instance, onion)
-		if bot.OnConnect != nil {
-			bot.OnConnect(peer)
-		}
-		return err
-	})
+
+	peer := bot.AddPeer(instance, onion)
+	if bot.OnConnect != nil {
+		bot.OnConnect(peer)
+	}
 	return nil
 }
 
 func (bot *RicochetBot) Shutdown() {
-    bot.app.Shutdown()
+	bot.app.Shutdown()
 }
 
 func (bot *RicochetBot) AddPeer(rai *application.ApplicationInstance, hostname string) *Peer {
@@ -101,7 +93,7 @@ func (bot *RicochetBot) Run() {
 			ch := new(RicochetBotContactHandler)
 			ch.bot = bot
 			ch.rai = rai
-			contact.Handler = new(RicochetBotContactHandler)
+			contact.Handler = ch
 			return contact
 		}
 	})
@@ -128,14 +120,21 @@ func (bot *RicochetBot) Run() {
 	}
 
 	bot.app = new(application.RicochetApplication)
+	cm := new(RicochetBotContactManager)
+	cm.bot = bot
+	bot.app.Init("APPLICATION", bot.PrivateKey, af, cm)
+
+	bot.app.MakeContactHandler = func(rai *application.ApplicationInstance) channels.ContactRequestChannelHandler {
+		ch := new(RicochetBotContactHandler)
+		ch.Onion = rai.RemoteHostname
+		ch.bot = bot
+		ch.rai = rai
+		return ch
+	}
 
 	bot.app.OnNewPeer = func(rai *application.ApplicationInstance, hostname string) {
 		bot.AddPeer(rai, hostname)
 	}
-
-	cm := new(RicochetBotContactManager)
-	cm.bot = bot
-	bot.app.Init("APPLICATION", bot.PrivateKey, af, cm)
 
 	if bot.TorControlAddress == "" {
 		bot.TorControlAddress = "127.0.0.1:9051"

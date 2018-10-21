@@ -16,8 +16,8 @@ type Peer struct {
 // We always want bidirectional chat channels
 func (peer *Peer) OpenInbound() {
 	log.Println("OpenInbound() ChatChannel handler called...")
-	outboutChatChannel := peer.rai.Connection.Channel("im.ricochet.chat", channels.Outbound)
-	if outboutChatChannel == nil {
+	outboundChatChannel := peer.rai.Connection.Channel("im.ricochet.chat", channels.Outbound)
+	if outboundChatChannel == nil {
 		peer.rai.Connection.Do(func() error {
 			peer.rai.Connection.RequestOpenChannel("im.ricochet.chat",
 				&channels.ChatChannel{
