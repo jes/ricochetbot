@@ -36,7 +36,10 @@ func (bot *RicochetBot) Connect(onion string) error {
 
 	peer := bot.AddPeer(instance, onion)
 	if bot.OnConnect != nil {
-		bot.OnConnect(peer)
+		instance.Connection.Do(func() error {
+			bot.OnConnect(peer)
+			return nil
+		})
 	}
 	return nil
 }
