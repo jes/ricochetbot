@@ -13,17 +13,19 @@ type RicochetBotContactManager struct {
 
 // LookupContact returns that a contact is known and allowed to communicate for all cases.
 func (rbcm *RicochetBotContactManager) LookupContact(hostname string, publicKey rsa.PublicKey) (allowed, known bool) {
-	status := true
+	accept := true
 	if rbcm.bot.OnNewPeer != nil {
-		status = rbcm.bot.OnNewPeer(rbcm.bot.LookupPeerByHostname(hostname))
-		// XXX: call the handler for when an inbound channel is opened, this is a bodge so that the bot can
-		// open an outbound channel immediately if it wants to; having an outbound channel always open makes
-		// it possible to send messages to a peer without having to first remember to open the outbound channel
-		if status {
-			go rbcm.bot.LookupPeerByHostname(hostname).OpenInbound()
-		}
+		accept = rbcm.bot.OnNewPeer(rbcm.bot.LookupPeerByHostname(hostname))
 	}
-	return status, status
+
+	// XXX: call the handler for when an inbound channel is opened, this is a bodge so that the bot can
+	// open an outbound channel immediately if it wants to; having an outbound channel always open makes
+	// it possible to send messages to a peer without having to first remember to open the outbound channel
+	if accept {
+		go rbcm.bot.LookupPeerByHostname(hostname).OpenInbound()
+	}
+
+	return accept, accept
 }
 
 func (rbcm *RicochetBotContactManager) ContactRequest(hostname string, name string, message string) string {
