@@ -35,12 +35,6 @@ func (bot *RicochetBot) Connect(onion string) error {
 	}
 
 	peer := bot.AddPeer(instance, onion)
-	if bot.OnConnect != nil {
-		instance.Connection.Do(func() error {
-			bot.OnConnect(peer)
-			return nil
-		})
-	}
 	return nil
 }
 
@@ -137,6 +131,19 @@ func (bot *RicochetBot) Run() {
 
 	bot.app.OnNewPeer = func(rai *application.ApplicationInstance, hostname string) {
 		bot.AddPeer(rai, hostname)
+	}
+
+	bot.app.OnAuthenticated = func(rai *application.ApplicationInstance, known bool) {
+		if bot.OnConnect != nil {
+			bot.OnConnect(peer)
+		}
+
+		if known {
+			// XXX: call the handler for when an inbound channel is opened, this is a bodge so that the bot can
+			// open an outbound channel immediately if it wants to; having an outbound channel always open makes
+			// it possible to send messages to a peer without having to first remember to open the outbound channel
+			bot.LookupPeerByHostname(rai.RemoteHostname).OpenInbound()
+		}
 	}
 
 	if bot.TorControlAddress == "" {
