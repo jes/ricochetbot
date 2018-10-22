@@ -46,6 +46,13 @@ func (bot *RicochetBot) AddPeer(rai *application.ApplicationInstance, hostname s
 	bot.peerLock.Lock()
 	defer bot.peerLock.Unlock()
 
+	// if we already have this peer, just return it
+	for _, peer := range bot.Peers {
+		if peer.Onion == hostname && peer.rai == rai {
+			return peer
+		}
+	}
+
 	peer := new(Peer)
 	peer.Onion = hostname
 	peer.rai = rai
@@ -134,6 +141,7 @@ func (bot *RicochetBot) Run() {
 	}
 
 	bot.app.OnAuthenticated = func(rai *application.ApplicationInstance, known bool) {
+		bot.AddPeer(rai, rai.RemoteHostname)
 		peer := bot.LookupPeerByHostname(rai.RemoteHostname)
 
 		if bot.OnConnect != nil {
