@@ -27,8 +27,8 @@ type RicochetBot struct {
 	OnDisconnect     func(*Peer)
 }
 
-func (bot *RicochetBot) Connect(onion string) error {
-	instance, err := bot.app.Open(onion, "CONNECTION")
+func (bot *RicochetBot) Connect(onion string, message string) error {
+	instance, err := bot.app.Open(onion, message)
 	if err != nil {
 		log.Printf("can't connect to %s: %v", onion, err)
 		return err
@@ -126,7 +126,7 @@ func (bot *RicochetBot) Run() {
 	bot.app = new(application.RicochetApplication)
 	cm := new(RicochetBotContactManager)
 	cm.bot = bot
-	bot.app.Init("APPLICATION", bot.PrivateKey, af, cm)
+	bot.app.Init("", bot.PrivateKey, af, cm)
 
 	bot.app.MakeContactHandler = func(rai *application.ApplicationInstance) channels.ContactRequestChannelHandler {
 		ch := new(RicochetBotContactHandler)
