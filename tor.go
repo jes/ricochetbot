@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"github.com/yawning/bulb"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -79,7 +80,37 @@ func (bot *RicochetBot) ManageTor(datadir string) error {
 	bot.TorControlType = "tcp4"
 	bot.TorControlAuthentication = password
 
+	bot.TorSocksAddress, err = ReadSocksPort(bot.TorControlAddress, password)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func ReadSocksPort(controlport string, password string) (string, error) {
+	c, err := bulb.Dial("tcp4", controlport)
+	if err != nil {
+		return "", err
+	}
+
+	if err := c.Authenticate(password); err != nil {
+		return "", err
+	}
+
+	resp, err := c.Request("GETINFO net/listeners/socks")
+	if err != nil {
+		return "", err
+	}
+	if len(resp.Data) != 1 {
+		return "", errors.New("Expected exactly 1 SOCKS listener, got " + string(len(resp.Data)))
+	}
+	parts := strings.Split(resp.Data[0], "=")
+	if len(parts) != 2 {
+		return "", errors.New("Expected a SOCKS listener of the form net/listeners/socks=127.0.0.1:xxxx, got " + resp.Data[0])
+	}
+
+	return parts[1], nil
 }
 
 func RandomPassword() (string, error) {

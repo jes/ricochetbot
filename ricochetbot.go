@@ -16,6 +16,7 @@ type RicochetBot struct {
 	TorControlAddress        string
 	TorControlType           string
 	TorControlAuthentication string
+	TorSocksAddress          string
 
 	app *application.RicochetApplication
 
@@ -130,6 +131,10 @@ func (bot *RicochetBot) Run() {
 	cm := new(RicochetBotContactManager)
 	cm.bot = bot
 	bot.app.Init("", bot.PrivateKey, af, cm)
+
+	if bot.TorSocksAddress != "" {
+		bot.app.SOCKSProxy = bot.TorSocksAddress
+	}
 
 	bot.app.MakeContactHandler = func(rai *application.ApplicationInstance) channels.ContactRequestChannelHandler {
 		ch := new(RicochetBotContactHandler)
