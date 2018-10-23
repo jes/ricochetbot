@@ -28,6 +28,9 @@ type RicochetBot struct {
 }
 
 func (bot *RicochetBot) Connect(onion string, message string) error {
+	if bot.LookupPeerByHostname(onion) != nil {
+		return nil
+	}
 	instance, err := bot.app.Open(onion, message)
 	if err != nil {
 		log.Printf("can't connect to %s: %v", onion, err)
