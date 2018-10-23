@@ -9,3 +9,5 @@ Still to implement:
  - built-in contacts management, with persistent state available
  - make sure rejecting contact requests etc. actually works
  - more/better examples
+ - automatically close connections of duplicate peers
+ - regression tests
