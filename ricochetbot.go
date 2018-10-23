@@ -145,14 +145,14 @@ func (bot *RicochetBot) Run() {
 		peer := bot.LookupPeerByHostname(rai.RemoteHostname)
 
 		if bot.OnConnect != nil {
-			bot.OnConnect(peer)
+			go bot.OnConnect(peer)
 		}
 
 		if known {
 			// XXX: call the handler for when an inbound channel is opened, this is a bodge so that the bot can
 			// open an outbound channel immediately if it wants to; having an outbound channel always open makes
 			// it possible to send messages to a peer without having to first remember to open the outbound channel
-			peer.OpenInbound()
+			go peer.OpenInbound()
 		}
 	}
 
