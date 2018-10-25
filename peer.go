@@ -31,6 +31,7 @@ func (peer *Peer) OpenInbound() {
 func (peer *Peer) OpenedOutbound() {
 	if peer.Bot.OnReadyToChat != nil {
 		peer.Bot.OnReadyToChat(peer)
+		peer.Bot.DedupPeers(peer)
 	}
 }
 

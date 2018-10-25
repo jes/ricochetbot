@@ -78,7 +78,27 @@ func (bot *RicochetBot) DeletePeer(peer *Peer) {
 	}
 }
 
-// XXX: what if we have 2 peers with the same hostname?
+// delete & disconncet from other peers with the same onion as peer.Onion
+func (bot *RicochetBot) DedupPeers(peer *Peer) {
+	bot.peerLock.Lock()
+	defer bot.peerLock.Unlock()
+
+	for i := 0; i < len(bot.Peers); i++ {
+		p := bot.Peers[i]
+		if p.Onion == peer.Onion && p != peer {
+			// remove this peer by swapping the final peer into its place and then
+			// removing the final peer (this works even on the final entry)
+			bot.Peers[i].Disconnect()
+			bot.Peers[i] = bot.Peers[len(bot.Peers)-1]
+			bot.Peers = bot.Peers[:len(bot.Peers)-1]
+
+			// re-process this index in case it also needs deleting
+			i--
+		}
+	}
+}
+
+// reutrn first peer with this hostname
 func (bot *RicochetBot) LookupPeerByHostname(onion string) *Peer {
 	bot.peerLock.Lock()
 	defer bot.peerLock.Unlock()
@@ -89,6 +109,20 @@ func (bot *RicochetBot) LookupPeerByHostname(onion string) *Peer {
 		}
 	}
 	return nil
+}
+
+func (bot *RicochetBot) LookupAllPeersByHostname(onion string) []*Peer {
+	bot.peerLock.Lock()
+	defer bot.peerLock.Unlock()
+
+	peers := make([]*Peer, 0)
+
+	for _, peer := range bot.Peers {
+		if peer.Onion == onion {
+			peers = append(peers, peer)
+		}
+	}
+	return peers
 }
 
 func (bot *RicochetBot) Run() {
@@ -115,15 +149,14 @@ func (bot *RicochetBot) Run() {
 	})
 
 	af.OnClosed = func(rai *application.ApplicationInstance, err error) {
-		if bot.OnDisconnect != nil {
-			fmt.Println("Disconnection from ", rai.RemoteHostname)
-			peer := bot.LookupPeerByHostname(rai.RemoteHostname)
-			if peer != nil {
-				bot.OnDisconnect(peer)
-				bot.DeletePeer(peer)
-			} else {
-				fmt.Println("A nil peer disconnected: ", rai.RemoteHostname)
-			}
+		fmt.Println("Disconnection from ", rai.RemoteHostname)
+		peers := bot.LookupAllPeersByHostname(rai.RemoteHostname)
+		if bot.OnDisconnect != nil && len(peers) == 1 {
+			// only when there's exactly 1 peer of this name has our state changed from "connected" to "not connected"
+			bot.OnDisconnect(peers[0])
+		}
+		if len(peers) > 0 {
+			bot.DeletePeer(peers[0])
 		}
 	}
 
