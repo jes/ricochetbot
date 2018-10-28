@@ -13,6 +13,9 @@ func main() {
 		log.Fatalf("error reading private key file: %v", err)
 	}
 
+	onion, _ := utils.GetOnionAddress(pk)
+	fmt.Println("We're coming up at ricochet:" + onion + "\n\nIt might take a few minutes before the hidden service is ready.\n")
+
 	bot := ricochetbot.RicochetBot{
 		PrivateKey: pk,
 	}
@@ -34,6 +37,11 @@ func main() {
 	}
 	bot.OnDisconnect = func(peer *ricochetbot.Peer) {
 		fmt.Println(peer.Onion, " disconnected")
+	}
+
+	err = bot.ManageTor("/tmp/echobot-tor")
+	if err != nil {
+		log.Fatalf("can't start tor: %v", err)
 	}
 
 	bot.Run()
