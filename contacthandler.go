@@ -1,7 +1,6 @@
 package ricochetbot
 
 import (
-	"fmt"
 	"github.com/jes/go-ricochet/application"
 )
 
@@ -13,7 +12,6 @@ type RicochetBotContactHandler struct {
 
 func (rbch *RicochetBotContactHandler) ContactRequest(hostname string, name string, message string) string {
 	rbch.Onion = hostname
-	fmt.Println("contacthandler.go: ContactRequest(", name, ", ", message, ")")
 	accept := rbch.bot.OnContactRequest(rbch.bot.LookupPeerByHostname(hostname), name, message)
 	if accept {
 		return "Accepted"

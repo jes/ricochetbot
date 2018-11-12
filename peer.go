@@ -36,7 +36,6 @@ func (peer *Peer) OpenedOutbound() {
 }
 
 func (peer *Peer) ChatMessage(messageID uint32, when time.Time, message string) bool {
-	log.Printf("ChatMessage(from: %v, %v", peer.rai.RemoteHostname, message)
 	if peer.Bot.OnMessage != nil {
 		peer.Bot.OnMessage(peer, message)
 	}
@@ -48,7 +47,6 @@ func (peer *Peer) SendMessage(message string) {
 }
 
 func SendMessage(rai *application.ApplicationInstance, message string) {
-	log.Printf("SendMessage(to: %v, %v)\n", rai.RemoteHostname, message)
 	rai.Connection.Do(func() error {
 
 		log.Printf("Finding Chat Channel")

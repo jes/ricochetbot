@@ -2,7 +2,6 @@ package ricochetbot
 
 import (
 	"crypto/rsa"
-	"fmt"
 )
 
 // RicochetBotContactManager implements the contact manager interface an presumes
@@ -33,7 +32,6 @@ func (rbcm *RicochetBotContactManager) ContactRequest(hostname string, name stri
 	if rbcm.bot.OnContactRequest != nil {
 		accept = rbcm.bot.OnContactRequest(rbcm.bot.LookupPeerByHostname(hostname), name, message)
 	}
-	fmt.Println("contactmanager.go: ContactRequest(", name, ", ", message, ")")
 	if accept {
 		return "Accepted"
 	} else {

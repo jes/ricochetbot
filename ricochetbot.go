@@ -34,7 +34,6 @@ func (bot *RicochetBot) Connect(onion string, message string) error {
 	}
 	instance, err := bot.app.Open(onion, message)
 	if err != nil {
-		log.Printf("can't connect to %s: %v", onion, err)
 		return err
 	}
 
@@ -149,7 +148,6 @@ func (bot *RicochetBot) Run() {
 	})
 
 	af.OnClosed = func(rai *application.ApplicationInstance, err error) {
-		fmt.Println("Disconnection from ", rai.RemoteHostname)
 		peers := bot.LookupAllPeersByHostname(rai.RemoteHostname)
 		if bot.OnDisconnect != nil && len(peers) == 1 {
 			// only when there's exactly 1 peer of this name has our state changed from "connected" to "not connected"
