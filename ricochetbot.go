@@ -2,7 +2,6 @@ package ricochetbot
 
 import (
 	"crypto/rsa"
-	"fmt"
 	"github.com/jes/go-ricochet/application"
 	"github.com/jes/go-ricochet/channels"
 	"log"
